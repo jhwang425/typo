@@ -31,6 +31,35 @@ describe ArticlesController do
     get 'tag'
     response.should redirect_to(tags_path)
   end
+  
+  describe 'merge action' do
+    before :each do
+    end
+    
+    it 'should be render template edit' do 
+      response.should render_template(:edit)
+    end
+    
+    it 'should call merge articles model instance method' do
+      @article1 = Factory(:article, :id => 1)
+      @article2 = Factory(:article, :id => 2)
+      @article1.should_receive(:merge_with).with(2)    
+    end
+    
+    describe 'merge action with VALID Article ID' do 
+      @article1 = Factory(:article, :id => 1)
+      @article2 = Factory(:article, :id => 2)
+      @article1.should_receive(:merge_with).with(2).and_return(true)
+      response.should render_template(:edit)
+    end
+    
+    describe 'merge action with INVALID Article ID' do 
+      @article1 = Factory(:article, :id => 1)
+      @article2 = Factory(:article, :id => 2)
+      @article1.should_receive(:merge_with).with(2).and_return(false)
+      response.should render_template(:edit)
+    end      
+  end
 
   describe 'index action' do
     before :each do
@@ -66,7 +95,7 @@ describe ArticlesController do
       response.should have_selector('head>script[src="foo.js"]')
     end
   end
-
+  
 
   describe '#search action' do
     before :each do

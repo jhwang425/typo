@@ -25,6 +25,23 @@ describe Article do
     a = Article.new
     assert_equal [:body, :extended], a.content_fields
   end
+  
+  describe "merge_with" do
+    before :each do
+      @article1 = Factory(:article, :id => 1)
+      @article2 = Factory(:article, :id => 2)
+    end
+    
+    it "should call the model method find on article" do 
+      Article.should_receive(:find_by_id).with(2)
+    end
+    
+    it "should call the model method find on comments" do 
+      Comment.should_receive(:find_all_by_article_id).with(2)
+    end
+    
+        
+  end
 
   describe "#permalink_url" do
     describe "with hostname" do
