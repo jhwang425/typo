@@ -33,32 +33,51 @@ describe ArticlesController do
   end
   
   describe 'merge action' do
-    before :each do
+    describe 'merge action as Admin' do
+      before :each do
+        Factory(:blog)
+            @admin = Factory(:user, :profile => Factory(:profile_admin, :label => Profile::ADMIN))
+        request.session = { :user => @admin.id }
+      end
+      
+      describe 'merge action with VALID Article ID should call model method' do 
+        before :each do
+        end
+        
+        describe 'merge action with VAlID second article ID' do
+          @article1 = Factory(:article, :id => 1)
+          @article2 = Factory(:article, :id => 2)
+          Article.should_receive(:find_by_id).with(1).and_return(@article1)
+          @article1.should_receive(:merge_with).with(2).and_return(true)
+          post :merge_with, {:id => 1, :articleMergeID => 2}
+        end
+        
+        describe 'merge action with INVAlID second article ID' do
+          @article1 = Factory(:article, :id => 1)
+          Article.should_receive(:find_by_id).with(1).and_return(@article1)
+          @article1.should_receive(:merge_with).with(2).and_return(false)
+          post :merge_with, {:id => 1, :articleMergeID => 2}
+        end
+      end
+      
+      describe 'merge action with INVALID first Article ID' do 
+        Article.should_receive(:find_by_id).with(1).and_return(nil)
+        post :merge_with, {:id => 1, :articleMergeID => 2}
+      end
+    
+      it 'should be render template edit' do 
+        response.should render_template(:edit)
+      end
+      
     end
     
-    it 'should be render template edit' do 
-      response.should render_template(:edit)
-    end
-    
-    it 'should call merge articles model instance method' do
-      @article1 = Factory(:article, :id => 1)
-      @article2 = Factory(:article, :id => 2)
-      @article1.should_receive(:merge_with).with(2)    
-    end
-    
-    describe 'merge action with VALID Article ID' do 
-      @article1 = Factory(:article, :id => 1)
-      @article2 = Factory(:article, :id => 2)
-      @article1.should_receive(:merge_with).with(2).and_return(true)
-      response.should render_template(:edit)
-    end
-    
-    describe 'merge action with INVALID Article ID' do 
-      @article1 = Factory(:article, :id => 1)
-      @article2 = Factory(:article, :id => 2)
-      @article1.should_receive(:merge_with).with(2).and_return(false)
-      response.should render_template(:edit)
-    end      
+    describe 'merge action as non-Admin' do
+      before :each do
+        Factory(:blog)
+        user = Factory(:user)
+        session[:user] = user.id
+      end
+    end  
   end
 
   describe 'index action' do
