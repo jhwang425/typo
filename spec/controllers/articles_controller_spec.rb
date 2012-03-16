@@ -6,7 +6,7 @@ describe ArticlesController do
 
   before(:each) do
     #TODO Need to reduce user, but allow to remove user fixture...
-    Factory(:user,
+    @henri = Factory(:user,
             :login => 'henri',
             :password => 'whatever',
             :name => 'Henri',
@@ -18,9 +18,8 @@ describe ArticlesController do
             :notify_on_new_articles => false,
             :notify_on_comments => false,
             :state => 'active')
-    Factory(:blog, :custom_tracking_field => '<script src="foo.js" type="text/javascript"></script>') 
+    Factory(:blog, :custom_tracking_field => '<script src="foo.js" type="text/javascript"></script>')
   end
-
 
   it "should redirect category to /categories" do
     get 'category'
@@ -31,53 +30,53 @@ describe ArticlesController do
     get 'tag'
     response.should redirect_to(tags_path)
   end
-  
+
   describe 'merge action' do
     describe 'merge action as Admin' do
       before :each do
-        Factory(:blog)
-            @admin = Factory(:user, :profile => Factory(:profile_admin, :label => Profile::ADMIN))
-        request.session = { :user => @admin.id }
+        # Factory(:blog)
+        #    @admin = Factory(:user, :profile => Factory(:profile_admin, :label => Profile::ADMIN))
+        request.session = { :user => @henri.id }
       end
-      
-      describe 'merge action with VALID Article ID should call model method' do 
+
+      describe 'merge action with VALID Article ID should call model method' do
         before :each do
         end
-        
-        describe 'merge action with VAlID second article ID' do
+
+        it 'should get true when merge action with VAlID second article ID' do
           @article1 = Factory(:article, :id => 1)
           @article2 = Factory(:article, :id => 2)
           Article.should_receive(:find_by_id).with(1).and_return(@article1)
           @article1.should_receive(:merge_with).with(2).and_return(true)
           post :merge_with, {:id => 1, :articleMergeID => 2}
         end
-        
-        describe 'merge action with INVAlID second article ID' do
+
+        it 'should get false when merge action with INVAlID second article ID' do
           @article1 = Factory(:article, :id => 1)
           Article.should_receive(:find_by_id).with(1).and_return(@article1)
           @article1.should_receive(:merge_with).with(2).and_return(false)
           post :merge_with, {:id => 1, :articleMergeID => 2}
         end
       end
-      
-      describe 'merge action with INVALID first Article ID' do 
+
+      it 'should merge action with INVALID first Article ID' do
         Article.should_receive(:find_by_id).with(1).and_return(nil)
         post :merge_with, {:id => 1, :articleMergeID => 2}
       end
-    
-      it 'should be render template edit' do 
+
+      it 'should be render template edit' do
         response.should render_template(:edit)
       end
-      
+
     end
-    
+
     describe 'merge action as non-Admin' do
       before :each do
         Factory(:blog)
         user = Factory(:user)
         session[:user] = user.id
       end
-    end  
+    end
   end
 
   describe 'index action' do
@@ -105,16 +104,16 @@ describe ArticlesController do
     it 'should have a canonical url' do
       response.should have_selector('head>link[href="http://test.host/"]')
     end
-    
-    it 'should have googd title' do 
+
+    it 'should have googd title' do
       response.should have_selector('title', :content => "test blog | test subtitles")
     end
-    
-    it 'should have a custom tracking field' do      
+
+    it 'should have a custom tracking field' do
       response.should have_selector('head>script[src="foo.js"]')
     end
   end
-  
+
 
   describe '#search action' do
     before :each do
@@ -148,7 +147,7 @@ describe ArticlesController do
       it 'should have a canonical url' do
         response.should have_selector('head>link[href="http://test.host/search/a"]')
       end
-      
+
       it 'should have a good title' do
         response.should have_selector('title', :content => "Results for a | test blog")
       end
@@ -159,7 +158,7 @@ describe ArticlesController do
         end
       end
 
-      it 'should have a custom tracking field' do      
+      it 'should have a custom tracking field' do
         response.should have_selector('head>script[src="foo.js"]')
       end
     end
@@ -169,7 +168,7 @@ describe ArticlesController do
       response.should be_success
       response.should render_template('index_rss_feed')
       @layouts.keys.compact.should be_empty
-      response.should_not have_selector('head>script[src="foo.js"]')    
+      response.should_not have_selector('head>script[src="foo.js"]')
     end
 
     it 'should render feed atom by search' do
@@ -177,7 +176,7 @@ describe ArticlesController do
       response.should be_success
       response.should render_template('index_atom_feed')
       @layouts.keys.compact.should be_empty
-      response.should_not have_selector('head>script[src="foo.js"]')      
+      response.should_not have_selector('head>script[src="foo.js"]')
     end
 
     it 'search with empty result' do
@@ -185,7 +184,7 @@ describe ArticlesController do
       response.should render_template('articles/error')
       assigns[:articles].should be_empty
     end
-    
+
   end
 
   describe '#livesearch action' do
@@ -255,12 +254,12 @@ describe ArticlesController do
     it 'should have a canonical url' do
       response.should have_selector('head>link[href="http://test.host/2004/4/"]')
     end
-    
+
     it 'should have a good title' do
       response.should have_selector('title', :content => "Archives for test blog")
     end
-    
-    it 'should have a custom tracking field' do      
+
+    it 'should have a custom tracking field' do
       response.should have_selector('head>script[src="foo.js"]')
     end
   end
@@ -342,7 +341,7 @@ end
 
 describe ArticlesController, "the index" do
   before(:each) do
-    Factory(:blog) 
+    Factory(:blog)
     Factory(:user, :login => 'henri', :profile => Factory(:profile_admin, :label => Profile::ADMIN))
   end
 
