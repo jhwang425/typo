@@ -56,12 +56,14 @@ describe ArticlesController do
           Article.should_receive(:find_by_id).with(1).and_return(@article1)
           @article1.should_receive(:merge_with).with(2).and_return(false)
           post :merge_with, {:id => 1, :articleMergeID => 2}
+          response.should render_template(:show_article)
         end
       end
 
       it 'should render template edit with INVALID first Article ID' do
         Article.should_receive(:find_by_id).with(1).and_return(nil)
         post :merge_with, {:id => 1, :articleMergeID => 2}
+        response.should render_template(:show_article)
       end
 
       it 'should be render template edit' do
