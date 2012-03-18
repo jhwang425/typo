@@ -6,7 +6,7 @@ describe ArticlesController do
 
   before(:each) do
     #TODO Need to reduce user, but allow to remove user fixture...
-    @henri = Factory(:user,
+    @admin = Factory(:user,
             :login => 'henri',
             :password => 'whatever',
             :name => 'Henri',
@@ -35,11 +35,11 @@ describe ArticlesController do
     describe 'merge action as Admin' do
       before :each do
         # Factory(:blog)
-        #    @admin = Factory(:user, :profile => Factory(:profile_admin, :label => Profile::ADMIN))
-        request.session = { :user => @henri.id }
+        @admin = Factory(:user, :profile => Factory(:profile_admin, :label => Profile::ADMIN))
+        request.session = { :user => @admin.id }
       end
 
-      describe 'merge action with VALID Article ID should call model method' do
+      describe 'merge action with VALID Article IDs should call model method' do
         before :each do
         end
 
@@ -59,7 +59,7 @@ describe ArticlesController do
         end
       end
 
-      it 'should merge action with INVALID first Article ID' do
+      it 'should render template edit with INVALID first Article ID' do
         Article.should_receive(:find_by_id).with(1).and_return(nil)
         post :merge_with, {:id => 1, :articleMergeID => 2}
       end

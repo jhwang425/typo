@@ -25,22 +25,51 @@ describe Article do
     a = Article.new
     assert_equal [:body, :extended], a.content_fields
   end
-  
+
   describe "merge_with" do
     before :each do
-      @article1 = Factory(:article, :id => 1)
-      @article2 = Factory(:article, :id => 2)
+      @user1 = Factory(:user)
+      @user2 = Factory(:user)
+      @article1 = Factory(:article, :body => "article 1 text")
+      @article2 = Factory(:article, :body => "article 2 text")
+      @comment1 = Factory(:comment, :user_id => @user1.id, :article_id => @article2.id, :body => "comment 1")
+      @comment2 = Factory(:comment, :user_id => @user2.id, :article_id => @article2.id, :body => "comment 2")
     end
-    
-    it "should call the model method find on article" do 
+
+    describe "successful merge" do
+      before :each do
+        @article1.merge_with(@article2.id)
+      end
+
+      it "should have one article with text from second article merged into first" do
+        @article1.body.should == "article 1 textarticle 2 text"
+      end
+
+      it "should no longer have second article" do
+        Article.find_by_id(@article2.id).should == nil
+      end
+
+      it "should have the comments of the second article now belong to the first" do
+        Comment.find_by_id(@comment1.id).article_id.should == @article1.id
+        Comment.find_by_id(@comment2.id).article_id.should == @article1.id
+        # @comment1.article_id.should == @article1.id
+        # @comment2.article_id.should == @article1.id
+      end
+    end
+
+    it "should return false if merge fails" do
+      @article1.merge_with(0).should == false
+    end
+=begin
+    it "should call the model method find on article" do
       Article.should_receive(:find_by_id).with(2)
     end
-    
-    it "should call the model method find on comments" do 
+
+    it "should call the model method find on comments" do
       Comment.should_receive(:find_all_by_article_id).with(2)
     end
-    
-        
+=end
+
   end
 
   describe "#permalink_url" do
@@ -562,7 +591,7 @@ describe Article do
     describe "#find_by_permalink" do
       it "uses UTC to determine correct day" do
         @a.save
-        a = Article.find_by_permalink :year => 2011, :month => 2, :day => 21, :permalink => 'a-big-article' 
+        a = Article.find_by_permalink :year => 2011, :month => 2, :day => 21, :permalink => 'a-big-article'
         a.should == @a
       end
     end
@@ -583,7 +612,7 @@ describe Article do
     describe "#find_by_permalink" do
       it "uses UTC to determine correct day" do
         @a.save
-        a = Article.find_by_permalink :year => 2011, :month => 2, :day => 22, :permalink => 'a-big-article' 
+        a = Article.find_by_permalink :year => 2011, :month => 2, :day => 22, :permalink => 'a-big-article'
         a.should == @a
       end
     end

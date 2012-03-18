@@ -46,6 +46,19 @@ class ArticlesController < ContentController
     end
   end
 
+  def merge_with
+    merge_to_article = Article.find_by_id(params[:id])
+    if merge_to_article
+      if !merge_to_article.merge_with(params[:articleMergeID])
+        flash[:notice] = "The article could not be found"
+        redirect_to(:action => "show_article", :id => params[:id])
+      end
+    else
+      flash[:notice] = "The article could not be found"
+      redirect_to(:action => "show_article", :id => params[:id])
+    end
+  end
+
   def search
     @canonical_url = url_for(:only_path => false, :controller => 'articles', :action => 'search', :page => params[:page], :q => params[:q])
     @articles = this_blog.articles_matching(params[:q], :page => params[:page], :per_page => @limit)
